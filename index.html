@@ -57,12 +57,16 @@
 .reveal em{ color:var(--data); font-style:normal; }
 .reveal a{ color:var(--data); }
 
+/* El identificador del presentador (P1–P4) se muestra entre paréntesis
+   justo después del nombre de la sección, en la parte superior izquierda. */
 .eyebrow{
-  display:flex; justify-content:space-between; align-items:center;
+  display:flex; justify-content:flex-start; align-items:center; gap:.5em;
   font-family:'JetBrains Mono',monospace; font-size:.44em;
   color:var(--ink-dim); border-bottom:1px solid var(--line);
   padding-bottom:.6em; margin-bottom:1.1em; }
 .eyebrow .who{ color:var(--seismic); }
+.eyebrow .who::before{ content:"("; }
+.eyebrow .who::after{ content:")"; }
 
 .fault{ width:64px; height:3px; background:var(--seismic);
   margin:.2em 0 .7em 0; position:relative; }
