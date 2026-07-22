@@ -92,14 +92,16 @@
 .caption{ font-size:.48em; color:var(--ink-dim); margin-top:.45em;
   font-family:'JetBrains Mono',monospace; }
 
-/* Mapas Plotly verticales (700x800) escalados para caber en el slide */
+/* Mapas Plotly: el tamaño real de cada HTML se mide con JS (fitMaps)
+   y se escala para calzar COMPLETO y centrado en el marco, sin scroll.
+   Los valores iniciales son solo un respaldo por si la medición falla. */
 .map-holder{
-  width:441px; height:507px; overflow:hidden; margin:0;
+  width:441px; height:503px; overflow:hidden; margin:0; position:relative;
   border:1px solid var(--line); border-radius:12px; background:#fff;
   box-shadow:0 10px 40px rgba(0,0,0,.5); flex:none; }
 .map-holder iframe{
-  width:702px; height:806px; border:0;
-  transform:scale(0.63); transform-origin:top left; }
+  width:716px; height:1080px; border:0; display:block;
+  transform:translate(54px,0) scale(0.4657); transform-origin:top left; }
 .map-side{ flex:1; min-width:0; }
 .map-hint{ font-size:.46em; color:var(--ink-dim);
   font-family:'JetBrains Mono',monospace; margin-top:.35em; }
@@ -260,7 +262,7 @@
     <div class="eyebrow"><span>03 · DATOS Y EDA · MAPA</span><span class="who">PRESENTADOR 1</span></div>
     <h2>Densidad espacial del catálogo</h2>
     <div class="cols">
-      <div class="map-holder"><iframe src="maps/mapa_sismos_bins_hexagonales_vertical.html" loading="lazy" title="Mapa de densidad de sismos"></iframe></div>
+      <div class="map-holder"><iframe src="maps/mapa_sismos_bins_hexagonales_vertical.html" loading="lazy" scrolling="no" title="Mapa de densidad de sismos"></iframe></div>
       <div class="map-side">
         <ul style="font-size:.66em">
           <li><strong>3.546 eventos</strong> en celdas hexagonales</li>
@@ -310,7 +312,7 @@
     <div class="eyebrow"><span>04 · K-MEANS · MAPA</span><span class="who">PRESENTADOR 2</span></div>
     <h2>Partición geográfica K = 2</h2>
     <div class="cols">
-      <div class="map-holder"><iframe src="maps/mapa_kmeans_k2_resultado.html" loading="lazy" title="Mapa K-Means"></iframe></div>
+      <div class="map-holder"><iframe src="maps/mapa_kmeans_k2_resultado.html" loading="lazy" scrolling="no" title="Mapa K-Means"></iframe></div>
       <div class="map-side">
         <ul style="font-size:.66em">
           <li>G0 (rojo): norte desde <strong>Antofagasta</strong>, incluye eventos sobre territorio boliviano y argentino</li>
@@ -346,7 +348,7 @@
     <div class="eyebrow"><span>05 · JERÁRQUICO · MAPA</span><span class="who">PRESENTADOR 2</span></div>
     <h2>Grupos con enlace de Ward</h2>
     <div class="cols">
-      <div class="map-holder"><iframe src="maps/mapa_jward_k2_resultado.html" loading="lazy" title="Mapa clustering jerárquico Ward"></iframe></div>
+      <div class="map-holder"><iframe src="maps/mapa_jward_k2_resultado.html" loading="lazy" scrolling="no" title="Mapa clustering jerárquico Ward"></iframe></div>
       <div class="map-side">
         <ul style="font-size:.66em">
           <li>Cluster pequeño: sismos del norte, cercanos a la <strong>frontera este</strong></li>
@@ -389,7 +391,7 @@
     <div class="eyebrow"><span>06 · DBSCAN · MAPA</span><span class="who">PRESENTADOR 3</span></div>
     <h2>Concentraciones densas y ruido en los bordes</h2>
     <div class="cols">
-      <div class="map-holder"><iframe src="maps/mapa_dbscan_k2_resultado.html" loading="lazy" title="Mapa DBSCAN"></iframe></div>
+      <div class="map-holder"><iframe src="maps/mapa_dbscan_k2_resultado.html" loading="lazy" scrolling="no" title="Mapa DBSCAN"></iframe></div>
       <div class="map-side">
         <ul style="font-size:.66em">
           <li>Dos concentraciones espaciales bien diferenciadas</li>
@@ -436,7 +438,7 @@
     <div class="eyebrow"><span>07 · MEAN SHIFT · MAPA</span><span class="who">PRESENTADOR 3</span></div>
     <h2>Un cluster masivo, outliers dispersos</h2>
     <div class="cols">
-      <div class="map-holder"><iframe src="maps/mapa_meanshift_k2_resultado.html" loading="lazy" title="Mapa Mean Shift"></iframe></div>
+      <div class="map-holder"><iframe src="maps/mapa_meanshift_k2_resultado.html" loading="lazy" scrolling="no" title="Mapa Mean Shift"></iframe></div>
       <div class="map-side">
         <ul style="font-size:.66em">
           <li>Todas las zonas del país dominadas por el <strong>cluster 0</strong></li>
@@ -490,7 +492,7 @@
     <div class="eyebrow"><span>08 · GMM · MAPA</span><span class="who">PRESENTADOR 4</span></div>
     <h2>Componentes ordenados de norte a sur sobre la fosa</h2>
     <div class="cols">
-      <div class="map-holder"><iframe src="maps/mapa_gmm_k4_resultado.html" loading="lazy" title="Mapa GMM"></iframe></div>
+      <div class="map-holder"><iframe src="maps/mapa_gmm_k4_resultado.html" loading="lazy" scrolling="no" title="Mapa GMM"></iframe></div>
       <div class="map-side">
         <ul style="font-size:.62em">
           <li><strong>G3</strong> (violeta): extremo norte, bloque compacto</li>
@@ -566,6 +568,77 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
 <script>
+/* ===== Auto-ajuste de mapas Plotly al marco (.map-holder) =====
+   Estrategia de detección del tamaño real del mapa (en orden):
+   1) Medir el DOM del iframe (exacto; requiere servidor http://)
+   2) Leer el HTML del mapa con fetch y extraer width/height del
+      layout de Plotly (también requiere http://)
+   3) Fallback generoso — el sobrante queda como margen blanco
+      invisible (el marco es blanco), nunca se recorta el mapa. */
+const MAP_FALLBACK = { w: 716, h: 1080 };
+const mapSizeCache = {};
+
+function readDomSize(f){
+  try{
+    const d = f.contentDocument;
+    if(d && d.body){
+      const w = Math.max(d.documentElement.scrollWidth,  d.body.scrollWidth);
+      const h = Math.max(d.documentElement.scrollHeight, d.body.scrollHeight);
+      if(w > 50 && h > 50) return { w, h };
+    }
+  }catch(e){ /* file://: bloqueado */ }
+  return null;
+}
+
+async function readPlotlySize(src){
+  if(mapSizeCache[src] !== undefined) return mapSizeCache[src];
+  let size = null;
+  try{
+    const txt = await (await fetch(src)).text();
+    const i = txt.lastIndexOf('"layout"');
+    const chunk = i >= 0 ? txt.slice(i, i + 4000) : txt;
+    const w = chunk.match(/"width"\s*:\s*(\d{3,4})/);
+    const h = chunk.match(/"height"\s*:\s*(\d{3,4})/);
+    if(w && h) size = { w: +w[1] + 16, h: +h[1] + 16 }; /* + márgenes body */
+  }catch(e){ /* file://: fetch bloqueado */ }
+  mapSizeCache[src] = size;
+  return size;
+}
+
+function applyFit(f, w, h){
+  const holder = f.parentElement;
+  const s  = Math.min(holder.clientWidth / w, holder.clientHeight / h);
+  const ox = (holder.clientWidth  - w * s) / 2;
+  const oy = (holder.clientHeight - h * s) / 2;
+  f.style.width  = w + 'px';
+  f.style.height = h + 'px';
+  f.style.transformOrigin = 'top left';
+  f.style.transform = `translate(${ox}px, ${oy}px) scale(${s})`;
+}
+
+async function fitMap(f){
+  const holder = f.parentElement;
+  if(!holder || !holder.classList.contains('map-holder')) return;
+  let size = readDomSize(f);
+  if(!size) size = await readPlotlySize(f.getAttribute('src'));
+  if(!size) size = MAP_FALLBACK;
+  applyFit(f, size.w, size.h);
+}
+
+function fitAllMaps(){
+  document.querySelectorAll('.map-holder iframe').forEach(fitMap);
+}
+
+document.querySelectorAll('.map-holder iframe').forEach(f=>{
+  f.addEventListener('load', ()=>{
+    fitMap(f);
+    /* Segundo ajuste: Plotly puede redimensionar tras el load */
+    setTimeout(()=>fitMap(f), 400);
+  });
+});
+window.addEventListener('load', fitAllMaps);
+window.addEventListener('resize', fitAllMaps);
+
 Reveal.initialize({
   hash: true,
   slideNumber: 'c/t',
@@ -577,6 +650,9 @@ Reveal.initialize({
   controlsTutorial: false,
   plugins: [ RevealNotes ]
 });
+
+Reveal.on('ready', fitAllMaps);
+Reveal.on('slidechanged', ()=> setTimeout(fitAllMaps, 250));
 </script>
 </body>
 </html>
