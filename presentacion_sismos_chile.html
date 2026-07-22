@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Análisis No Supervisado de Eventos Sísmicos en Chile</title>
+
+<!--
+================================================================
+ PAQUETE AUTOCONTENIDO — mantener esta estructura de carpetas:
+   presentacion_sismos_chile.html
+   img/   (figuras PNG)
+   maps/  (mapas Plotly interactivos, funcionan sin internet)
+
+ NAVEGACIÓN
+   →  avanza de sección        ↓  baja a mapas / slides de apoyo
+   S  vista de presentador (notas + cronómetro)
+   F  pantalla completa         O  vista general
+   B  pantalla en negro (pausa)
+
+ Requiere internet solo para cargar Reveal.js y fuentes (CDN).
+ Los mapas Plotly funcionan 100% offline.
+================================================================
+-->
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+/* ============ TEMA TECTÓNICA ============ */
+:root{
+  --bg-deep:   #0d1421;
+  --bg-panel:  #131d2e;
+  --ink:       #e8edf4;
+  --ink-dim:   #8fa1b8;
+  --seismic:   #e63946;
+  --data:      #4cc9f0;
+  --amber:     #f4a261;
+  --line:      #22314a;
+}
+
+.reveal-viewport{ background:
+  radial-gradient(1200px 600px at 80% -10%, #16233a 0%, transparent 60%),
+  var(--bg-deep); }
+
+.reveal{ font-family:'Inter',sans-serif; font-size:30px; color:var(--ink); }
+.reveal h1,.reveal h2,.reveal h3{
+  font-family:'Space Grotesk',sans-serif; letter-spacing:-0.02em;
+  color:var(--ink); text-transform:none; }
+.reveal h1{ font-size:2.1em; font-weight:700; }
+.reveal h2{ font-size:1.3em; font-weight:700; margin-bottom:.5em; }
+.reveal h3{ font-size:1.0em; font-weight:500; color:var(--data); }
+.reveal p, .reveal li{ line-height:1.5; }
+.reveal .slides section{ text-align:left; padding:0 20px; }
+.reveal strong{ color:var(--amber); font-weight:600; }
+.reveal em{ color:var(--data); font-style:normal; }
+.reveal a{ color:var(--data); }
+
+.eyebrow{
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:'JetBrains Mono',monospace; font-size:.44em;
+  color:var(--ink-dim); border-bottom:1px solid var(--line);
+  padding-bottom:.6em; margin-bottom:1.1em; }
+.eyebrow .who{ color:var(--seismic); }
+
+.fault{ width:64px; height:3px; background:var(--seismic);
+  margin:.2em 0 .7em 0; position:relative; }
+.fault::after{ content:""; position:absolute; left:64px; top:-5px;
+  width:32px; height:3px; background:var(--data); }
+
+.cols{ display:flex; gap:1.1em; align-items:stretch; }
+.cols > div{ flex:1; min-width:0; }
+.cols .narrow{ flex:0.72; }
+
+.metric-row{ display:flex; gap:.7em; margin:.7em 0; }
+.metric{
+  flex:1; background:var(--bg-panel); border:1px solid var(--line);
+  border-left:3px solid var(--seismic); border-radius:8px;
+  padding:.5em .7em; }
+.metric .num{
+  font-family:'JetBrains Mono',monospace; font-size:1.1em;
+  font-weight:600; color:var(--data); display:block; }
+.metric .lbl{ font-size:.5em; color:var(--ink-dim);
+  text-transform:uppercase; letter-spacing:.08em; }
+
+.reveal .fig{
+  background:#fff; border-radius:10px; padding:8px;
+  box-shadow:0 8px 30px rgba(0,0,0,.45);
+  max-width:100%; max-height:58vh; margin:0; }
+.reveal .fig.tall{ max-height:64vh; }
+.caption{ font-size:.48em; color:var(--ink-dim); margin-top:.45em;
+  font-family:'JetBrains Mono',monospace; }
+
+/* Mapas Plotly verticales (700x800) escalados para caber en el slide */
+.map-holder{
+  width:441px; height:507px; overflow:hidden; margin:0;
+  border:1px solid var(--line); border-radius:12px; background:#fff;
+  box-shadow:0 10px 40px rgba(0,0,0,.5); flex:none; }
+.map-holder iframe{
+  width:702px; height:806px; border:0;
+  transform:scale(0.63); transform-origin:top left; }
+.map-side{ flex:1; min-width:0; }
+.map-hint{ font-size:.46em; color:var(--ink-dim);
+  font-family:'JetBrains Mono',monospace; margin-top:.35em; }
+
+.reveal table{ font-size:.6em; border-collapse:collapse; margin:.5em 0; }
+.reveal th{
+  font-family:'Space Grotesk',sans-serif; font-weight:600;
+  color:var(--data); border-bottom:2px solid var(--seismic);
+  padding:.32em .75em; text-align:left; }
+.reveal td{ border-bottom:1px solid var(--line); padding:.3em .75em;
+  font-family:'JetBrains Mono',monospace; font-size:.95em; }
+.reveal tr.hl td{ color:var(--amber); font-weight:600; }
+
+.reveal ul{ list-style:none; margin-left:0; }
+.reveal ul li{ padding-left:1.05em; position:relative; margin:.4em 0; }
+.reveal ul li::before{ content:"▸"; color:var(--seismic);
+  position:absolute; left:0; }
+.reveal ul ul li::before{ content:"·"; color:var(--data); }
+
+.title-slide{ text-align:center !important; }
+.title-slide .course{
+  font-family:'JetBrains Mono',monospace; font-size:.5em;
+  color:var(--data); letter-spacing:.15em; }
+.title-slide h1{ margin:.35em 0 .2em 0; }
+.title-slide .subtitle{ color:var(--ink-dim); font-size:.75em; }
+.title-slide .authors{ font-size:.58em; color:var(--ink); margin-top:1.5em; }
+.title-slide .authors span{ color:var(--seismic); }
+
+.seismo{ width:min(760px,90%); height:90px; margin:1em auto 0 auto; display:block; }
+.seismo path{ fill:none; stroke:var(--seismic); stroke-width:2.2;
+  stroke-dasharray:2600; stroke-dashoffset:2600;
+  animation:trace 5s ease-out forwards; filter:drop-shadow(0 0 6px rgba(230,57,70,.55)); }
+@keyframes trace{ to{ stroke-dashoffset:0; } }
+@media (prefers-reduced-motion: reduce){
+  .seismo path{ animation:none; stroke-dashoffset:0; } }
+
+.closing h2{ font-size:1.7em; }
+.tag{ display:inline-block; background:var(--bg-panel);
+  border:1px solid var(--line); border-radius:999px;
+  padding:.15em .7em; font-size:.5em; color:var(--data);
+  font-family:'JetBrains Mono',monospace; margin:.2em .15em; }
+
+.reveal .progress{ color:var(--seismic); height:4px; }
+.reveal .controls{ color:var(--data); }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ================= PRESENTADOR 1 ================= -->
+
+<!-- 1. PORTADA -->
+<section class="title-slide" data-transition="zoom">
+  <p class="course">EPG4002 · APRENDIZAJE NO SUPERVISADO · PUC CHILE</p>
+  <h1>Análisis No Supervisado de<br>Eventos Sísmicos en Chile</h1>
+  <p class="subtitle">Comparación de cinco técnicas de clustering</p>
+  <svg class="seismo" viewBox="0 0 760 90" aria-hidden="true">
+    <path d="M0,45 L60,45 L70,42 L80,48 L95,45 L120,45 L128,30 L136,62 L144,18
+             L152,75 L160,10 L168,80 L176,25 L184,58 L192,38 L205,50 L220,45
+             L280,45 L290,40 L300,50 L315,45 L360,45 L368,35 L376,55 L384,28
+             L392,64 L400,40 L412,48 L430,45 L500,45 L508,42 L516,48 L530,45
+             L560,45 L566,36 L572,54 L580,45 L640,45 L648,43 L656,47 L670,45 L760,45"/>
+  </svg>
+  <p class="authors">A. Caro · S. Mancilla · N. Narria · E. Rodriguez<br>
+  <span>Julio 2026</span></p>
+  <aside class="notes">Presentador 1 · 30 s. Saludo y título. El sismograma se dibuja solo (~5 s): esperar a que termine antes de avanzar.</aside>
+</section>
+
+<!-- 2. INTRODUCCIÓN -->
+<section>
+  <div class="eyebrow"><span>01 · INTRODUCCIÓN</span><span class="who">PRESENTADOR 1</span></div>
+  <h2>¿Puede un algoritmo redescubrir las zonas sísmicas de Chile?</h2>
+  <div class="fault"></div>
+  <ul>
+    <li class="fragment">Chile: convergencia de las placas de <strong>Nazca y Sudamericana</strong> — los sismos no son uniformes, se organizan en <em>zonas sísmicas</em></li>
+    <li class="fragment">Pregunta: ¿puede el clustering, <strong>sin saber sismología</strong>, recuperar esas zonas usando solo coordenadas, profundidad y magnitud?</li>
+    <li class="fragment">Doble interés: evaluar técnicas sobre <em>datos reales con respuesta conocida</em> y contrastar los supuestos de cada método</li>
+  </ul>
+  <div class="metric-row fragment">
+    <div class="metric"><span class="num">3.546</span><span class="lbl">eventos sísmicos</span></div>
+    <div class="metric"><span class="num">2016–2026</span><span class="lbl">período · CSN</span></div>
+    <div class="metric"><span class="num">4</span><span class="lbl">variables: lat, lon, prof, mag</span></div>
+    <div class="metric"><span class="num">≥ 3.8</span><span class="lbl">magnitud mínima</span></div>
+  </div>
+  <aside class="notes">~1 min. Motivación geofísica y pregunta central. Avanzar fragmentos con la flecha.</aside>
+</section>
+
+<!-- 3. OBJETIVOS Y METODOLOGÍA -->
+<section>
+  <div class="eyebrow"><span>02 · OBJETIVOS</span><span class="who">PRESENTADOR 1</span></div>
+  <h2>Cinco técnicas, cinco supuestos distintos</h2>
+  <div class="fault"></div>
+  <div class="cols">
+    <div>
+      <h3>Objetivo general</h3>
+      <p style="font-size:.72em">Recuperar la estructura sismotectónica de Chile <strong>sin conocimiento geofísico previo</strong>.</p>
+      <h3 style="margin-top:.7em">Criterios de selección</h3>
+      <ul style="font-size:.66em">
+        <li>Silhouette, varianza intra-cluster y Calinski-Harabasz</li>
+        <li>AIC y BIC para GMM</li>
+        <li>Contraste con la sismotectónica conocida</li>
+      </ul>
+    </div>
+    <div>
+      <table style="width:100%">
+        <tr><th>Técnica</th><th>Supuesto clave</th></tr>
+        <tr><td>K-Means</td><td>Clusters esféricos</td></tr>
+        <tr><td>Jerárquico</td><td>Estructura anidada</td></tr>
+        <tr><td>DBSCAN</td><td>Densidad + ruido</td></tr>
+        <tr><td>Mean Shift</td><td>Modas de densidad</td></tr>
+        <tr class="hl"><td>GMM</td><td>Gaussianas orientadas</td></tr>
+      </table>
+    </div>
+  </div>
+  <aside class="notes">~45 s. Enfatizar: cada método "ve" el mundo distinto — ese es el hilo conductor de toda la presentación.</aside>
+</section>
+
+<!-- 4. DATOS Y EDA (stack vertical: correlación → distribuciones → mapa) -->
+<section>
+  <section>
+    <div class="eyebrow"><span>03 · DATOS Y EDA</span><span class="who">PRESENTADOR 1</span></div>
+    <h2>La geografía ya está escrita en las correlaciones</h2>
+    <div class="fault"></div>
+    <div class="cols">
+      <div class="narrow">
+        <img class="fig" src="img/matriz_correlacion.png" alt="Matriz de correlación de Pearson">
+        <p class="caption">Correlación lineal de Pearson</p>
+      </div>
+      <div>
+        <ul style="font-size:.7em">
+          <li>Lat–Lon: <strong>r = 0.74</strong> → refleja la línea de la costa</li>
+          <li>Lon–Profundidad: <strong>r = 0.67</strong> → plano inclinado de <em>subducción</em></li>
+          <li>Magnitud casi independiente (r ≤ 0.31)</li>
+          <li class="fragment"><strong>Anticipo:</strong> grupos alargados e inclinados → mala noticia para clusters esféricos</li>
+        </ul>
+      </div>
+    </div>
+    <p class="map-hint">↓ distribuciones y mapa de densidad</p>
+    <aside class="notes">~45 s. La correlación anticipa el resultado final: la geometría favorece a GMM. Bajar con ↓.</aside>
+  </section>
+  <section>
+    <div class="eyebrow"><span>03 · DATOS Y EDA · DISTRIBUCIONES</span><span class="who">PRESENTADOR 1</span></div>
+    <h2>Variables estandarizadas y estabilidad temporal</h2>
+    <div class="cols">
+      <div>
+        <img class="fig" src="img/boxplot_estandarizado.png" alt="Datos estandarizados">
+        <p class="caption">Escalas dispares (prof. 0–600 km) → estandarización</p>
+      </div>
+      <div>
+        <img class="fig" src="img/sismos_por_anio.png" alt="Sismos por año">
+        <p class="caption">250–450 sismos/año · magnitud estable en el período</p>
+      </div>
+    </div>
+    <aside class="notes">~30 s (slide de apoyo, se puede saltar con → si falta tiempo). Sin datos ausentes; profundidad con fuertes outliers.</aside>
+  </section>
+  <section>
+    <div class="eyebrow"><span>03 · DATOS Y EDA · MAPA</span><span class="who">PRESENTADOR 1</span></div>
+    <h2>Densidad espacial del catálogo</h2>
+    <div class="cols">
+      <div class="map-holder"><iframe src="maps/mapa_sismos_bins_hexagonales_vertical.html" loading="lazy" title="Mapa de densidad de sismos"></iframe></div>
+      <div class="map-side">
+        <ul style="font-size:.66em">
+          <li><strong>3.546 eventos</strong> en celdas hexagonales</li>
+          <li>Franja angosta paralela a la costa: la traza de la <em>fosa</em></li>
+          <li class="fragment">Mayor densidad en el norte y centro del país</li>
+        </ul>
+        <p class="caption fragment">Mapa interactivo: zoom y hover en vivo</p>
+      </div>
+    </div>
+    <aside class="notes">~30 s. Hacer zoom en vivo a la franja costera. Cierra el bloque del presentador 1 (~2.5 min).</aside>
+  </section>
+</section>
+
+<!-- ================= PRESENTADOR 2 ================= -->
+
+<!-- 5. K-MEANS -->
+<section>
+  <section>
+    <div class="eyebrow"><span>04 · K-MEANS</span><span class="who">PRESENTADOR 2</span></div>
+    <h2>K-Means: solo un corte norte–sur</h2>
+    <div class="fault"></div>
+    <div class="cols">
+      <div>
+        <img class="fig" src="img/seleccion_k_kmeans.png" alt="Selección de K">
+        <p class="caption">Silhouette, varianza intra y Calinski-Harabasz, K ∈ [2,12]</p>
+      </div>
+      <div class="narrow">
+        <div class="metric-row" style="flex-direction:column">
+          <div class="metric"><span class="num">K = 2</span><span class="lbl">máximo Silhouette (0.40)</span></div>
+          <div class="metric"><span class="num">G0 → Norte</span><span class="lbl">desde Antofagasta, más profundos</span></div>
+          <div class="metric"><span class="num">G1 → Resto</span><span class="lbl">centro-sur, superficiales</span></div>
+        </div>
+        <p class="fragment" style="font-size:.6em">El peak local en K=7 no se replica en los otros índices → se descarta.</p>
+      </div>
+    </div>
+    <p class="map-hint">↓ variables por grupo y mapa</p>
+    <aside class="notes">~50 s. K=2 respaldado por triangulación de índices, no por uno solo.</aside>
+  </section>
+  <section>
+    <div class="eyebrow"><span>04 · K-MEANS · GRUPOS</span><span class="who">PRESENTADOR 2</span></div>
+    <h2>Los grupos se separan por latitud y longitud</h2>
+    <img class="fig tall" src="img/kmeans_k2_boxplots.png" alt="Boxplots K-Means K=2" style="display:block;margin:0 auto">
+    <p class="caption">G0 concentra valores altos en lat/lon/prof (norte, más profundos) · magnitud casi no discrimina</p>
+    <aside class="notes">~25 s. Diferencia principal en lat y lon; leve en profundidad, mínima en magnitud.</aside>
+  </section>
+  <section>
+    <div class="eyebrow"><span>04 · K-MEANS · MAPA</span><span class="who">PRESENTADOR 2</span></div>
+    <h2>Partición geográfica K = 2</h2>
+    <div class="cols">
+      <div class="map-holder"><iframe src="maps/mapa_kmeans_k2_resultado.html" loading="lazy" title="Mapa K-Means"></iframe></div>
+      <div class="map-side">
+        <ul style="font-size:.66em">
+          <li>G0 (rojo): norte desde <strong>Antofagasta</strong>, incluye eventos sobre territorio boliviano y argentino</li>
+          <li>G1 (azul): centro y sur del país</li>
+          <li class="fragment">La frontera <strong>no separa</strong> sismicidad superficial de profunda ni fosa de continente</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">~20 s. Limitación clave: corte latitudinal, no estructura tectónica.</aside>
+  </section>
+</section>
+
+<!-- 6. JERÁRQUICO -->
+<section>
+  <section>
+    <div class="eyebrow"><span>05 · CLUSTERING JERÁRQUICO</span><span class="who">PRESENTADOR 2</span></div>
+    <h2>Jerárquico: solo Ward sobrevive</h2>
+    <div class="fault"></div>
+    <ul style="font-size:.7em">
+      <li><strong>Enlace Simple</strong> fracasa: la nube es continua, sin saltos que detectar</li>
+      <li><strong>Enlace Completo</strong> fracasa: demasiados outliers</li>
+      <li class="fragment"><strong>Ward</strong> logra 2 grupos: uno pequeño en el norte (profundo) y otro con &gt;75% de los sismos (superficiales)</li>
+    </ul>
+    <div class="metric-row fragment">
+      <div class="metric"><span class="num">0.377</span><span class="lbl">Silhouette — separación débil</span></div>
+      <div class="metric"><span class="num">&gt; 75%</span><span class="lbl">de eventos en un solo cluster</span></div>
+    </div>
+    <p class="fragment" style="font-size:.62em">Misma partición gruesa que K-Means: los sismos son <em>más profundos cuanto más lejos de la costa</em>.</p>
+    <p class="map-hint">↓ mapa Ward</p>
+    <aside class="notes">~1 min. Explicar por qué falla cada enlace — refuerza "los supuestos determinan lo que ves".</aside>
+  </section>
+  <section>
+    <div class="eyebrow"><span>05 · JERÁRQUICO · MAPA</span><span class="who">PRESENTADOR 2</span></div>
+    <h2>Grupos con enlace de Ward</h2>
+    <div class="cols">
+      <div class="map-holder"><iframe src="maps/mapa_jward_k2_resultado.html" loading="lazy" title="Mapa clustering jerárquico Ward"></iframe></div>
+      <div class="map-side">
+        <ul style="font-size:.66em">
+          <li>Cluster pequeño: sismos del norte, cercanos a la <strong>frontera este</strong></li>
+          <li class="fragment">Coherente con la geofísica: la placa se hunde hacia el este → sismos más profundos lejos de la costa</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">~25 s. Cierra bloque 2 (~2.5 min).</aside>
+  </section>
+</section>
+
+<!-- ================= PRESENTADOR 3 ================= -->
+
+<!-- 7. DBSCAN -->
+<section>
+  <section>
+    <div class="eyebrow"><span>06 · DBSCAN</span><span class="who">PRESENTADOR 3</span></div>
+    <h2>DBSCAN: dos núcleos densos y el mérito del ruido</h2>
+    <div class="fault"></div>
+    <div class="cols">
+      <div class="narrow">
+        <table style="width:100%">
+          <tr><th>Resultado</th><th>Eventos</th><th>Silh.</th></tr>
+          <tr><td>Cluster 0</td><td>1.680 (47%)</td><td>0.526</td></tr>
+          <tr><td>Cluster 1</td><td>1.048 (30%)</td><td>0.442</td></tr>
+          <tr class="hl"><td>Ruido</td><td>818 (23%)</td><td>—</td></tr>
+        </table>
+        <p class="caption">eps = 0.55 · min_samples = 50<br>Silhouette global 0.493 · C-H 3.225,7</p>
+      </div>
+      <div>
+        <img class="fig" src="img/dbscan_k2_boxplot.png" alt="Boxplots DBSCAN">
+        <p class="caption">Variables por cluster y ruido (-1)</p>
+      </div>
+    </div>
+    <p class="fragment" style="font-size:.62em"><strong>Aporte clave:</strong> el 23% de ruido no es un tercer cluster — son eventos que <em>no pertenecen densamente</em> a ninguna concentración.</p>
+    <p class="map-hint">↓ mapa DBSCAN</p>
+    <aside class="notes">~1.2 min. Cluster 0 más cohesionado (0.526). El ruido con máxima dispersión en las 4 variables es información, no error.</aside>
+  </section>
+  <section>
+    <div class="eyebrow"><span>06 · DBSCAN · MAPA</span><span class="who">PRESENTADOR 3</span></div>
+    <h2>Concentraciones densas y ruido en los bordes</h2>
+    <div class="cols">
+      <div class="map-holder"><iframe src="maps/mapa_dbscan_k2_resultado.html" loading="lazy" title="Mapa DBSCAN"></iframe></div>
+      <div class="map-side">
+        <ul style="font-size:.66em">
+          <li>Dos concentraciones espaciales bien diferenciadas</li>
+          <li class="fragment">El ruido aparece <strong>disperso y en los bordes</strong> de las zonas densas</li>
+          <li class="fragment">DBSCAN describe lo denso, no todo el catálogo</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">~25 s. Señalar el ruido en los bordes con el cursor.</aside>
+  </section>
+</section>
+
+<!-- 8. MEAN SHIFT -->
+<section>
+  <section>
+    <div class="eyebrow"><span>07 · MEAN SHIFT</span><span class="who">PRESENTADOR 3</span></div>
+    <h2>Mean Shift: un segmentador que resultó detector de anomalías</h2>
+    <div class="fault"></div>
+    <div class="cols">
+      <div>
+        <img class="fig" src="img/meanshift_busqueda_quantile.png" alt="Índices Mean Shift por cuantil">
+        <p class="caption">Clusters, Silhouette y C-H por cuantil</p>
+      </div>
+      <div class="narrow">
+        <div class="metric-row" style="flex-direction:column">
+          <div class="metric"><span class="num">q = 0.40</span><span class="lbl">bandwidth ≈ 2.14 → 7 clusters</span></div>
+          <div class="metric"><span class="num">96%</span><span class="lbl">de eventos en el cluster 0</span></div>
+          <div class="metric"><span class="num">1–113</span><span class="lbl">eventos en los 6 restantes</span></div>
+        </div>
+        <p class="fragment" style="font-size:.58em">Se descartó q=0.45 (Silh. 0.49): valor inflado por un par de outliers aislados en su propio cluster.</p>
+      </div>
+    </div>
+    <p class="map-hint">↓ variables por grupo y mapa</p>
+    <aside class="notes">~1 min. Sismicidad de fondo densa y homogénea → cluster gigante + outliers.</aside>
+  </section>
+  <section>
+    <div class="eyebrow"><span>07 · MEAN SHIFT · GRUPOS</span><span class="who">PRESENTADOR 3</span></div>
+    <h2>Clusters minoritarios = eventos extremos</h2>
+    <img class="fig tall" src="img/meanshift_boxplot.png" alt="Boxplots Mean Shift" style="display:block;margin:0 auto">
+    <p class="caption">Clusters 2–6: eventos individuales con longitud, profundidad o magnitud excepcionales (los sismos más grandes del período)</p>
+    <aside class="notes">~25 s. Cluster 1 (113 ev.): más profundos y de mayor magnitud. Los demás son casos aislados.</aside>
+  </section>
+  <section>
+    <div class="eyebrow"><span>07 · MEAN SHIFT · MAPA</span><span class="who">PRESENTADOR 3</span></div>
+    <h2>Un cluster masivo, outliers dispersos</h2>
+    <div class="cols">
+      <div class="map-holder"><iframe src="maps/mapa_meanshift_k2_resultado.html" loading="lazy" title="Mapa Mean Shift"></iframe></div>
+      <div class="map-side">
+        <ul style="font-size:.66em">
+          <li>Todas las zonas del país dominadas por el <strong>cluster 0</strong></li>
+          <li class="fragment">Sin segmentación geográfica: funcionó como <em>detector de anomalías</em>, no como segmentador</li>
+          <li class="fragment">Útil como herramienta exploratoria de sismos atípicos</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">~25 s. Cierra bloque 3 (~2.5–3 min).</aside>
+  </section>
+</section>
+
+<!-- ================= PRESENTADOR 4 ================= -->
+
+<!-- 9. GMM -->
+<section>
+  <section>
+    <div class="eyebrow"><span>08 · GAUSSIAN MIXTURE</span><span class="who">PRESENTADOR 4</span></div>
+    <h2>GMM: la geometría correcta para este problema</h2>
+    <div class="fault"></div>
+    <div class="cols">
+      <div class="narrow">
+        <table style="width:100%">
+          <tr><th>K</th><th>Cov.</th><th>BIC</th></tr>
+          <tr><td>5</td><td>full</td><td>24,700</td></tr>
+          <tr class="hl"><td>4</td><td>full</td><td>25,348</td></tr>
+          <tr><td>3</td><td>full</td><td>26,868</td></tr>
+          <tr><td>5</td><td>diag</td><td>28,291</td></tr>
+        </table>
+        <p class="caption">Covarianza full domina consistentemente</p>
+      </div>
+      <div>
+        <ul style="font-size:.64em">
+          <li>Covarianza <strong>completa</strong>: única capaz de modelar grupos <em>alargados e inclinados</em></li>
+          <li class="fragment"><strong>K = 4</strong> sobre K = 5: el quinto componente fragmenta sin agregar interpretación (Baudry et al., 2010)</li>
+          <li class="fragment">G1 (n=149, σ<sub>prof</sub> ≈ 105 km) absorbe los atípicos y <strong>protege</strong> a los demás componentes</li>
+        </ul>
+      </div>
+    </div>
+    <p class="map-hint">↓ variables por componente y mapa</p>
+    <aside class="notes">~50 s. El EDA lo anticipó: correlaciones fuertes → elipses orientadas. AIC/BIC lo confirmaron.</aside>
+  </section>
+  <section>
+    <div class="eyebrow"><span>08 · GMM · COMPONENTES</span><span class="who">PRESENTADOR 4</span></div>
+    <h2>Cuatro componentes con perfiles diferenciados</h2>
+    <img class="fig tall" src="img/gmm_k4_boxplots.png" alt="Boxplots GMM K=4" style="display:block;margin:0 auto">
+    <p class="caption">G0/G3 compactos · G1 (naranja) con dispersión de profundidad que supera a todos · magnitud = variable menos discriminante</p>
+    <aside class="notes">~25 s. A diferencia de K-Means, aquí los grupos se separan por latitud Y profundidad simultáneamente.</aside>
+  </section>
+  <section>
+    <div class="eyebrow"><span>08 · GMM · MAPA</span><span class="who">PRESENTADOR 4</span></div>
+    <h2>Componentes ordenados de norte a sur sobre la fosa</h2>
+    <div class="cols">
+      <div class="map-holder"><iframe src="maps/mapa_gmm_k4_resultado.html" loading="lazy" title="Mapa GMM"></iframe></div>
+      <div class="map-side">
+        <ul style="font-size:.62em">
+          <li><strong>G3</strong> (violeta): extremo norte, bloque compacto</li>
+          <li><strong>G2</strong> (verde): el más extenso, cercano a la fosa</li>
+          <li class="fragment"><strong>G0</strong> (rojo): núcleo central denso — se superpone a G2 en planta, los separa la <em>profundidad</em> (44 vs 62 km)</li>
+          <li class="fragment"><strong>G1</strong> (azul): disperso sobre Argentina/Bolivia — recoge los atípicos, no es región sísmica</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes">~35 s. La superposición G0/G2 ocurre en la vertical: invisible en el mapa, visible en el corte transversal que viene.</aside>
+  </section>
+</section>
+
+<!-- 10. WADATI-BENIOFF -->
+<section>
+  <div class="eyebrow"><span>09 · VALIDACIÓN GEOFÍSICA</span><span class="who">PRESENTADOR 4</span></div>
+  <h2>El GMM redescubre la zona de Wadati-Benioff</h2>
+  <div class="fault"></div>
+  <div class="cols">
+    <div>
+      <img class="fig tall" src="img/corte_transversal.png" alt="Proyección longitud-profundidad">
+      <p class="caption">Proyección longitud–profundidad por componente</p>
+    </div>
+    <div class="narrow">
+      <ul style="font-size:.62em">
+        <li>Los 4 componentes se alinean sobre el <strong>plano inclinado</strong> de la placa de Nazca subductada (Cahill &amp; Isacks, 1992)</li>
+        <li class="fragment"><strong>93%</strong> de eventos asignados con probabilidad &gt; 0.7</li>
+        <li class="fragment">Los casos dudosos (5.5%) se concentran en las <em>fronteras</em> entre componentes — justo donde la física predice transiciones graduales</li>
+        <li class="fragment">Un modelo estadístico <strong>sin información geofísica</strong> recuperó estructura tectónica real</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">~50 s. Hallazgo estrella: la ambigüedad del modelo coincide con la ambigüedad física. Referencias: Wadati 1935, Benioff 1949/54.</aside>
+</section>
+
+<!-- 11. CONCLUSIONES -->
+<section>
+  <div class="eyebrow"><span>10 · CONCLUSIONES</span><span class="who">PRESENTADOR 4</span></div>
+  <h2>Cada algoritmo devuelve la estructura que sus supuestos le dejan ver</h2>
+  <div class="fault"></div>
+  <table style="width:100%; font-size:.55em">
+    <tr><th>Método</th><th>Resultado</th><th>Rol en el análisis</th></tr>
+    <tr><td>K-Means / Jerárquico</td><td>Corte norte–sur grueso</td><td>Partición base (débil)</td></tr>
+    <tr><td>DBSCAN</td><td>2 núcleos + 23% ruido</td><td>Detectar no-pertenencia</td></tr>
+    <tr><td>Mean Shift</td><td>1 cluster (96%) + outliers</td><td>Detector de anomalías</td></tr>
+    <tr class="hl"><td>GMM (full, K=4)</td><td>Zona de Wadati-Benioff</td><td>★ Mejor recuperación</td></tr>
+  </table>
+  <p class="fragment" style="font-size:.62em">Con una sola técnica habríamos concluido que <em>casi no hay estructura</em> — lo cual sería falso.</p>
+  <p class="fragment" style="font-size:.58em"><strong>Trabajo futuro:</strong> repetir sin magnitud · incluir eventos &lt; 3.8 · incorporar la dimensión temporal (réplicas y enjambres)</p>
+  <aside class="notes">~50 s. Mensaje central: la comparación de supuestos ES el resultado. Cierra bloque 4 (~3 min).</aside>
+</section>
+
+<!-- 12. CIERRE -->
+<section class="title-slide closing" data-transition="zoom">
+  <p class="course">GRACIAS</p>
+  <h2>¿Preguntas?</h2>
+  <svg class="seismo" viewBox="0 0 760 90" aria-hidden="true">
+    <path d="M0,45 L200,45 L210,40 L220,50 L235,45 L340,45 L348,28 L356,64
+             L364,20 L372,70 L380,45 L520,45 L528,42 L536,48 L550,45 L760,45"/>
+  </svg>
+  <p style="font-size:.55em; margin-top:1.2em">
+    <span class="tag">K-Means</span><span class="tag">Jerárquico</span>
+    <span class="tag">DBSCAN</span><span class="tag">Mean Shift</span>
+    <span class="tag" style="color:var(--amber); border-color:var(--amber)">GMM ★</span>
+  </p>
+  <p class="caption" style="text-align:center">Datos: Centro Sismológico Nacional · evtdb.csn.uchile.cl</p>
+  <aside class="notes">Agradecer y abrir a preguntas. Para revisar un mapa en Q&A: tecla O (vista general) y clic en el slide.</aside>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<script>
+Reveal.initialize({
+  hash: true,
+  slideNumber: 'c/t',
+  transition: 'slide',
+  backgroundTransition: 'fade',
+  width: 1280,
+  height: 760,
+  margin: 0.05,
+  controlsTutorial: false,
+  plugins: [ RevealNotes ]
+});
+</script>
+</body>
+</html>
