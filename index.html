@@ -173,7 +173,7 @@
 
 <!-- 2. INTRODUCCIÓN -->
 <section>
-  <div class="eyebrow"><span>01 · INTRODUCCIÓN</span><span class="who">PRESENTADOR 1</span></div>
+  <div class="eyebrow"><span>01 · INTRODUCCIÓN</span><span class="who">P1</span></div>
   <h2>¿Puede un algoritmo redescubrir las zonas sísmicas de Chile?</h2>
   <div class="fault"></div>
   <ul>
@@ -192,7 +192,7 @@
 
 <!-- 3. OBJETIVOS Y METODOLOGÍA -->
 <section>
-  <div class="eyebrow"><span>02 · OBJETIVOS</span><span class="who">PRESENTADOR 1</span></div>
+  <div class="eyebrow"><span>02 · OBJETIVOS</span><span class="who">P1</span></div>
   <h2>Cinco técnicas, cinco supuestos distintos</h2>
   <div class="fault"></div>
   <div class="cols">
@@ -223,7 +223,7 @@
 <!-- 4. DATOS Y EDA (stack vertical: correlación → distribuciones → mapa) -->
 <section>
   <section>
-    <div class="eyebrow"><span>03 · DATOS Y EDA</span><span class="who">PRESENTADOR 1</span></div>
+    <div class="eyebrow"><span>03 · DATOS Y EDA</span><span class="who">P1</span></div>
     <h2>La geografía ya está escrita en las correlaciones</h2>
     <div class="fault"></div>
     <div class="cols">
@@ -244,7 +244,7 @@
     <aside class="notes">~45 s. La correlación anticipa el resultado final: la geometría favorece a GMM. Bajar con ↓.</aside>
   </section>
   <section>
-    <div class="eyebrow"><span>03 · DATOS Y EDA · DISTRIBUCIONES</span><span class="who">PRESENTADOR 1</span></div>
+    <div class="eyebrow"><span>03 · DATOS Y EDA · DISTRIBUCIONES</span><span class="who">P1</span></div>
     <h2>Variables estandarizadas y estabilidad temporal</h2>
     <div class="cols">
       <div>
@@ -259,7 +259,7 @@
     <aside class="notes">~30 s (slide de apoyo, se puede saltar con → si falta tiempo). Sin datos ausentes; profundidad con fuertes outliers.</aside>
   </section>
   <section>
-    <div class="eyebrow"><span>03 · DATOS Y EDA · MAPA</span><span class="who">PRESENTADOR 1</span></div>
+    <div class="eyebrow"><span>03 · DATOS Y EDA · MAPA</span><span class="who">P1</span></div>
     <h2>Densidad espacial del catálogo</h2>
     <div class="cols">
       <div class="map-holder"><iframe src="maps/mapa_sismos_bins_hexagonales_vertical.html" loading="lazy" scrolling="no" title="Mapa de densidad de sismos"></iframe></div>
@@ -281,7 +281,7 @@
 <!-- 5. K-MEANS -->
 <section>
   <section>
-    <div class="eyebrow"><span>04 · K-MEANS</span><span class="who">PRESENTADOR 2</span></div>
+    <div class="eyebrow"><span>04 · K-MEANS</span><span class="who">P2</span></div>
     <h2>K-Means: solo un corte norte–sur</h2>
     <div class="fault"></div>
     <div class="cols">
@@ -302,14 +302,14 @@
     <aside class="notes">~50 s. K=2 respaldado por triangulación de índices, no por uno solo.</aside>
   </section>
   <section>
-    <div class="eyebrow"><span>04 · K-MEANS · GRUPOS</span><span class="who">PRESENTADOR 2</span></div>
+    <div class="eyebrow"><span>04 · K-MEANS · GRUPOS</span><span class="who">P2</span></div>
     <h2>Los grupos se separan por latitud y longitud</h2>
     <img class="fig tall" src="img/kmeans_k2_boxplots.png" alt="Boxplots K-Means K=2" style="display:block;margin:0 auto">
     <p class="caption">G0 concentra valores altos en lat/lon/prof (norte, más profundos) · magnitud casi no discrimina</p>
     <aside class="notes">~25 s. Diferencia principal en lat y lon; leve en profundidad, mínima en magnitud.</aside>
   </section>
   <section>
-    <div class="eyebrow"><span>04 · K-MEANS · MAPA</span><span class="who">PRESENTADOR 2</span></div>
+    <div class="eyebrow"><span>04 · K-MEANS · MAPA</span><span class="who">P2</span></div>
     <h2>Partición geográfica K = 2</h2>
     <div class="cols">
       <div class="map-holder"><iframe src="maps/mapa_kmeans_k2_resultado.html" loading="lazy" scrolling="no" title="Mapa K-Means"></iframe></div>
@@ -328,7 +328,7 @@
 <!-- 6. JERÁRQUICO -->
 <section>
   <section>
-    <div class="eyebrow"><span>05 · CLUSTERING JERÁRQUICO</span><span class="who">PRESENTADOR 2</span></div>
+    <div class="eyebrow"><span>05 · CLUSTERING JERÁRQUICO</span><span class="who">P2</span></div>
     <h2>Jerárquico: solo Ward sobrevive</h2>
     <div class="fault"></div>
     <ul style="font-size:.7em">
@@ -345,7 +345,7 @@
     <aside class="notes">~1 min. Explicar por qué falla cada enlace — refuerza "los supuestos determinan lo que ves".</aside>
   </section>
   <section>
-    <div class="eyebrow"><span>05 · JERÁRQUICO · MAPA</span><span class="who">PRESENTADOR 2</span></div>
+    <div class="eyebrow"><span>05 · JERÁRQUICO · MAPA</span><span class="who">P2</span></div>
     <h2>Grupos con enlace de Ward</h2>
     <div class="cols">
       <div class="map-holder"><iframe src="maps/mapa_jward_k2_resultado.html" loading="lazy" scrolling="no" title="Mapa clustering jerárquico Ward"></iframe></div>
@@ -365,7 +365,7 @@
 <!-- 7. DBSCAN -->
 <section>
   <section>
-    <div class="eyebrow"><span>06 · DBSCAN</span><span class="who">PRESENTADOR 3</span></div>
+    <div class="eyebrow"><span>06 · DBSCAN</span><span class="who">P3</span></div>
     <h2>DBSCAN: dos núcleos densos y el mérito del ruido</h2>
     <div class="fault"></div>
     <div class="cols">
@@ -388,7 +388,7 @@
     <aside class="notes">~1.2 min. Cluster 0 más cohesionado (0.526). El ruido con máxima dispersión en las 4 variables es información, no error.</aside>
   </section>
   <section>
-    <div class="eyebrow"><span>06 · DBSCAN · MAPA</span><span class="who">PRESENTADOR 3</span></div>
+    <div class="eyebrow"><span>06 · DBSCAN · MAPA</span><span class="who">P3</span></div>
     <h2>Concentraciones densas y ruido en los bordes</h2>
     <div class="cols">
       <div class="map-holder"><iframe src="maps/mapa_dbscan_k2_resultado.html" loading="lazy" scrolling="no" title="Mapa DBSCAN"></iframe></div>
@@ -407,7 +407,7 @@
 <!-- 8. MEAN SHIFT -->
 <section>
   <section>
-    <div class="eyebrow"><span>07 · MEAN SHIFT</span><span class="who">PRESENTADOR 3</span></div>
+    <div class="eyebrow"><span>07 · MEAN SHIFT</span><span class="who">P3</span></div>
     <h2>Mean Shift: un segmentador que resultó detector de anomalías</h2>
     <div class="fault"></div>
     <div class="cols">
@@ -428,14 +428,14 @@
     <aside class="notes">~1 min. Sismicidad de fondo densa y homogénea → cluster gigante + outliers.</aside>
   </section>
   <section>
-    <div class="eyebrow"><span>07 · MEAN SHIFT · GRUPOS</span><span class="who">PRESENTADOR 3</span></div>
+    <div class="eyebrow"><span>07 · MEAN SHIFT · GRUPOS</span><span class="who">P3</span></div>
     <h2>Clusters minoritarios = eventos extremos</h2>
     <img class="fig tall" src="img/meanshift_boxplot.png" alt="Boxplots Mean Shift" style="display:block;margin:0 auto">
     <p class="caption">Clusters 2–6: eventos individuales con longitud, profundidad o magnitud excepcionales (los sismos más grandes del período)</p>
     <aside class="notes">~25 s. Cluster 1 (113 ev.): más profundos y de mayor magnitud. Los demás son casos aislados.</aside>
   </section>
   <section>
-    <div class="eyebrow"><span>07 · MEAN SHIFT · MAPA</span><span class="who">PRESENTADOR 3</span></div>
+    <div class="eyebrow"><span>07 · MEAN SHIFT · MAPA</span><span class="who">P3</span></div>
     <h2>Un cluster masivo, outliers dispersos</h2>
     <div class="cols">
       <div class="map-holder"><iframe src="maps/mapa_meanshift_k2_resultado.html" loading="lazy" scrolling="no" title="Mapa Mean Shift"></iframe></div>
@@ -456,7 +456,7 @@
 <!-- 9. GMM -->
 <section>
   <section>
-    <div class="eyebrow"><span>08 · GAUSSIAN MIXTURE</span><span class="who">PRESENTADOR 4</span></div>
+    <div class="eyebrow"><span>08 · GAUSSIAN MIXTURE</span><span class="who">P4</span></div>
     <h2>GMM: la geometría correcta para este problema</h2>
     <div class="fault"></div>
     <div class="cols">
@@ -482,14 +482,14 @@
     <aside class="notes">~50 s. El EDA lo anticipó: correlaciones fuertes → elipses orientadas. AIC/BIC lo confirmaron.</aside>
   </section>
   <section>
-    <div class="eyebrow"><span>08 · GMM · COMPONENTES</span><span class="who">PRESENTADOR 4</span></div>
+    <div class="eyebrow"><span>08 · GMM · COMPONENTES</span><span class="who">P4</span></div>
     <h2>Cuatro componentes con perfiles diferenciados</h2>
     <img class="fig tall" src="img/gmm_k4_boxplots.png" alt="Boxplots GMM K=4" style="display:block;margin:0 auto">
     <p class="caption">G0/G3 compactos · G1 (naranja) con dispersión de profundidad que supera a todos · magnitud = variable menos discriminante</p>
     <aside class="notes">~25 s. A diferencia de K-Means, aquí los grupos se separan por latitud Y profundidad simultáneamente.</aside>
   </section>
   <section>
-    <div class="eyebrow"><span>08 · GMM · MAPA</span><span class="who">PRESENTADOR 4</span></div>
+    <div class="eyebrow"><span>08 · GMM · MAPA</span><span class="who">P4</span></div>
     <h2>Componentes ordenados de norte a sur sobre la fosa</h2>
     <div class="cols">
       <div class="map-holder"><iframe src="maps/mapa_gmm_k4_resultado.html" loading="lazy" scrolling="no" title="Mapa GMM"></iframe></div>
@@ -508,7 +508,7 @@
 
 <!-- 10. WADATI-BENIOFF -->
 <section>
-  <div class="eyebrow"><span>09 · VALIDACIÓN GEOFÍSICA</span><span class="who">PRESENTADOR 4</span></div>
+  <div class="eyebrow"><span>09 · VALIDACIÓN GEOFÍSICA</span><span class="who">P4</span></div>
   <h2>El GMM redescubre la zona de Wadati-Benioff</h2>
   <div class="fault"></div>
   <div class="cols">
@@ -530,7 +530,7 @@
 
 <!-- 11. CONCLUSIONES -->
 <section>
-  <div class="eyebrow"><span>10 · CONCLUSIONES</span><span class="who">PRESENTADOR 4</span></div>
+  <div class="eyebrow"><span>10 · CONCLUSIONES</span><span class="who">P4</span></div>
   <h2>Cada algoritmo devuelve la estructura que sus supuestos le dejan ver</h2>
   <div class="fault"></div>
   <table style="width:100%; font-size:.55em">
